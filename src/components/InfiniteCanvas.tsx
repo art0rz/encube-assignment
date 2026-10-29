@@ -45,8 +45,10 @@ export default function InfiniteCanvas({ children }: PropsWithChildren<{}>) {
   const [zoom, setZoom] = useState<number>(1);
   const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     const direction = Math.sign(event.deltaY);
-
-    setZoom((previous) => Math.min(5, Math.max(0.1, previous - direction * 0.1)));
+    setZoom((previous) => {
+      const next = Math.round((previous - direction * 0.1) * 10) / 10;
+      return Math.min(5, Math.max(0.1, next));
+    });
   };
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {

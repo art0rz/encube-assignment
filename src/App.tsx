@@ -1,12 +1,11 @@
 import "./App.css";
 import InfiniteCanvas from "./components/InfiniteCanvas.tsx";
+import WebGlContent from "./components/WebGlContent.tsx";
 
 function App() {
   return (
     <InfiniteCanvas>
-      <div>
-        <p>Hello!</p>
-      </div>
+      <WebGlContent />
     </InfiniteCanvas>
   );
 }
