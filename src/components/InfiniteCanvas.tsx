@@ -1,5 +1,4 @@
-import { Children, type PropsWithChildren, useRef, useState } from "react";
-import InfiniteCanvasItem from "./InfiniteCanvasItem.tsx";
+import { type PropsWithChildren, useRef, useState } from "react";
 import styled from "@emotion/styled";
 import * as React from "react";
 import { css } from "@emotion/react";
@@ -133,11 +132,7 @@ export default function InfiniteCanvas({ children }: PropsWithChildren<{}>) {
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
           }}
         >
-          {Children.map(children, (child) => (
-            <InfiniteCanvasItem x={100} y={100}>
-              {child}
-            </InfiniteCanvasItem>
-          ))}
+          {children}
         </World>
         <StatusBar>
           <div>Zoom: {Math.round(zoom * 100)}%</div>
