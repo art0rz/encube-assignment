@@ -25,6 +25,17 @@ const Root = styled.div(
   `,
 );
 
+const World = styled.div`
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
+`;
+
 const StatusBar = styled.div`
   position: absolute;
   bottom: 0;
@@ -40,14 +51,36 @@ const StatusBar = styled.div`
 
 export default function InfiniteCanvas({ children }: PropsWithChildren<{}>) {
   const drag = useRef<{ x: number; y: number } | null>(null);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
 
-  const [zoom, setZoom] = useState<number>(1);
+  const [{ pan, zoom }, setView] = useState({
+    pan: { x: 0, y: 0 },
+    zoom: 1,
+  });
+
   const onWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    const direction = Math.sign(event.deltaY);
-    setZoom((previous) => {
-      const next = Math.round((previous - direction * 0.1) * 10) / 10;
-      return Math.min(5, Math.max(0.1, next));
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const pointerX = event.clientX - bounds.left;
+    const pointerY = event.clientY - bounds.top;
+
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? bounds.height : 1;
+
+    const delta = event.deltaY * unit;
+
+    setView(({ pan, zoom }) => {
+      const nextZoom = Math.min(5, Math.max(0.1, zoom * Math.exp(-delta * 0.002)));
+
+      // Find the canvas coordinate currently beneath the cursor.
+      const worldX = (pointerX - pan.x) / zoom;
+      const worldY = (pointerY - pan.y) / zoom;
+
+      // Keep that coordinate beneath the cursor after zooming.
+      return {
+        zoom: nextZoom,
+        pan: {
+          x: pointerX - worldX * nextZoom,
+          y: pointerY - worldY * nextZoom,
+        },
+      };
     });
   };
 
@@ -67,9 +100,12 @@ export default function InfiniteCanvas({ children }: PropsWithChildren<{}>) {
 
     drag.current = { x: event.clientX, y: event.clientY };
 
-    setPan((previous) => ({
-      x: previous.x + dx,
-      y: previous.y + dy,
+    setView((previous) => ({
+      ...previous,
+      pan: {
+        x: previous.pan.x + dx,
+        y: previous.pan.y + dy,
+      },
     }));
   };
 
@@ -90,13 +126,19 @@ export default function InfiniteCanvas({ children }: PropsWithChildren<{}>) {
       x={pan.x}
       y={pan.y}
     >
-      {Children.map(children, (child) => (
-        <InfiniteCanvasItem zoom={zoom} x={100 + pan.x} y={100 + pan.y}>
-          {child}
-        </InfiniteCanvasItem>
-      ))}
+      <World
+        style={{
+          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+        }}
+      >
+        {Children.map(children, (child) => (
+          <InfiniteCanvasItem x={100} y={100} zoom={zoom}>
+            {child}
+          </InfiniteCanvasItem>
+        ))}
+      </World>
       <StatusBar>
-        <div>Scale: {zoom}</div>
+        <div>Zoom: {Math.round(zoom * 100)}%</div>
       </StatusBar>
     </Root>
   );

@@ -63,8 +63,8 @@ export default function InfiniteCanvasItem({
     };
 
     setPosition((position) => ({
-      x: position.x + dx,
-      y: position.y + dy,
+      x: position.x + dx / zoom,
+      y: position.y + dy / zoom,
     }));
   };
 
@@ -81,7 +81,7 @@ export default function InfiniteCanvasItem({
   };
 
   return (
-    <Root style={{ transform: `translate(${position.x}px,${position.y}px) scale(${zoom}) ` }}>
+    <Root style={{ transform: `translate(${position.x}px,${position.y}px) ` }}>
       <Title
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
