@@ -1,6 +1,7 @@
 import { type PropsWithChildren, useRef, useState } from "react";
 import styled from "@emotion/styled";
 import * as React from "react";
+import { useCanvasViewport } from "../contexts/CanvasViewportContext/CanvasViewportContext.ts";
 
 const Root = styled.div`
   --padding-x: 4px;
@@ -30,17 +31,16 @@ const Content = styled.div`
 `;
 
 interface InfiniteCanvasItemProps {
-  zoom: number;
   x: number;
   y: number;
 }
 
 export default function InfiniteCanvasItem({
   children,
-  zoom,
   x,
   y,
 }: PropsWithChildren<InfiniteCanvasItemProps>) {
+  const { zoom } = useCanvasViewport();
   const [position, setPosition] = useState<{ x: number; y: number }>({ x, y });
   const dragStart = useRef<{ x: number; y: number } | null>(null);
 

@@ -3,6 +3,7 @@ import InfiniteCanvasItem from "./InfiniteCanvasItem.tsx";
 import styled from "@emotion/styled";
 import * as React from "react";
 import { css } from "@emotion/react";
+import { CanvasViewportContext } from "../contexts/CanvasViewportContext/CanvasViewportContext.ts";
 
 const Root = styled.div(
   ({ x, y }: { x: number; y: number }) => css`
@@ -115,31 +116,33 @@ export default function InfiniteCanvas({ children }: PropsWithChildren<{}>) {
   };
 
   return (
-    <Root
-      onWheel={onWheel}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={() => {
-        drag.current = null;
-      }}
-      x={pan.x}
-      y={pan.y}
-    >
-      <World
-        style={{
-          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+    <CanvasViewportContext value={{ zoom }}>
+      <Root
+        onWheel={onWheel}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => {
+          drag.current = null;
         }}
+        x={pan.x}
+        y={pan.y}
       >
-        {Children.map(children, (child) => (
-          <InfiniteCanvasItem x={100} y={100} zoom={zoom}>
-            {child}
-          </InfiniteCanvasItem>
-        ))}
-      </World>
-      <StatusBar>
-        <div>Zoom: {Math.round(zoom * 100)}%</div>
-      </StatusBar>
-    </Root>
+        <World
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          }}
+        >
+          {Children.map(children, (child) => (
+            <InfiniteCanvasItem x={100} y={100}>
+              {child}
+            </InfiniteCanvasItem>
+          ))}
+        </World>
+        <StatusBar>
+          <div>Zoom: {Math.round(zoom * 100)}%</div>
+        </StatusBar>
+      </Root>
+    </CanvasViewportContext>
   );
 }
