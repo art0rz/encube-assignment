@@ -1,7 +1,8 @@
 import { type PropsWithChildren, useRef, useState } from "react";
 import styled from "@emotion/styled";
 import * as React from "react";
-import { useCanvasViewport } from "../contexts/CanvasViewportContext/CanvasViewportContext.ts";
+import { useCanvasViewport } from "../state/CanvasViewportContext/CanvasViewportContext.ts";
+import { type Point } from "../types/Point.ts";
 
 const Root = styled.div`
   --padding-x: 4px;
@@ -49,8 +50,8 @@ export default function InfiniteCanvasItem({
   height,
 }: PropsWithChildren<InfiniteCanvasItemProps>) {
   const { zoom } = useCanvasViewport();
-  const [position, setPosition] = useState<{ x: number; y: number }>({ x, y });
-  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  const [position, setPosition] = useState<Point>({ x, y });
+  const dragStart = useRef<Point | null>(null);
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     event.stopPropagation();

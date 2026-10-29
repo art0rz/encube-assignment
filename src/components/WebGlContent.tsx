@@ -3,7 +3,7 @@ import { type PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { OrbitControls } from "@react-three/drei";
 import styled from "@emotion/styled";
 import { debounce } from "lodash-es";
-import { useCanvasViewport } from "../contexts/CanvasViewportContext/CanvasViewportContext.ts";
+import { useCanvasViewport } from "../state/CanvasViewportContext/CanvasViewportContext.ts";
 
 const Root = styled.div`
   width: 100%;

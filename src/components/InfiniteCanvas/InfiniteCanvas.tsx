@@ -1,11 +1,12 @@
 import { type PropsWithChildren } from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-import { CanvasViewportContext } from "../../contexts/CanvasViewportContext/CanvasViewportContext.ts";
+import { CanvasViewportContext } from "../../state/CanvasViewportContext/CanvasViewportContext.ts";
 import useInfiniteCanvasEvents from "./useInfiniteCanvasEvents.ts";
+import { type Point } from "../../types/Point.ts";
 
 const Root = styled.div(
-  ({ x, y }: { x: number; y: number }) => css`
+  ({ x, y }: Point) => css`
     background-image:
       linear-gradient(to right, white 9px, transparent 9px),
       linear-gradient(to bottom, white 9px, #b7b7b7 9px);
@@ -49,23 +50,22 @@ const StatusBar = styled.div`
   font-size: 12px;
 `;
 
-export default function InfiniteCanvas({ children }: PropsWithChildren<{}>) {
+interface InfiniteCanvasProps {
+  onCanvasClick?: (point: Point) => unknown;
+}
+
+export default function InfiniteCanvas({
+  children,
+  onCanvasClick = () => {},
+}: PropsWithChildren<InfiniteCanvasProps>) {
   const {
     viewport: { pan, zoom },
-    events: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onWheel },
-  } = useInfiniteCanvasEvents();
+    events,
+  } = useInfiniteCanvasEvents({ onCanvasClick });
 
   return (
     <CanvasViewportContext value={{ zoom }}>
-      <Root
-        onWheel={onWheel}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerCancel}
-        x={pan.x}
-        y={pan.y}
-      >
+      <Root x={pan.x} y={pan.y} {...events}>
         <World
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,

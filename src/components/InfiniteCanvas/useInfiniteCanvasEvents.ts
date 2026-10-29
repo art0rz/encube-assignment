@@ -1,8 +1,11 @@
 import { useRef, useState } from "react";
 import * as React from "react";
+import { type Point } from "../../types/Point.ts";
 
-function useInfiniteCanvasEvents() {
-  const drag = useRef<{ x: number; y: number } | null>(null);
+function useInfiniteCanvasEvents({ onCanvasClick }: { onCanvasClick: (point: Point) => unknown }) {
+  const pointerStart = useRef<Point | null>(null);
+  const drag = useRef<Point | null>(null);
+  const didDrag = useRef(false);
 
   const [view, setView] = useState({
     pan: { x: 0, y: 0 },
@@ -37,15 +40,25 @@ function useInfiniteCanvasEvents() {
   };
 
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.target !== event.currentTarget || event.button !== 0) {
-      return;
-    }
+    if (event.target !== event.currentTarget || event.button !== 0) return;
 
-    drag.current = { x: event.clientX, y: event.clientY };
+    const point = { x: event.clientX, y: event.clientY };
+
+    pointerStart.current = point;
+    drag.current = point;
+    didDrag.current = false;
+
     event.currentTarget.setPointerCapture(event.pointerId);
   };
+
   const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!drag.current) return;
+
+    const start = pointerStart.current;
+
+    if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 4) {
+      didDrag.current = true;
+    }
 
     const dx = event.clientX - drag.current.x;
     const dy = event.clientY - drag.current.y;
@@ -63,10 +76,28 @@ function useInfiniteCanvasEvents() {
 
   const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
     drag.current = null;
-    event.currentTarget.releasePointerCapture(event.pointerId);
+    pointerStart.current = null;
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
   };
+
   const onPointerCancel = () => {
     drag.current = null;
+    pointerStart.current = null;
+    didDrag.current = true;
+  };
+
+  const onClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget || didDrag.current) return;
+
+    const bounds = event.currentTarget.getBoundingClientRect();
+
+    onCanvasClick({
+      x: (event.clientX - bounds.left - view.pan.x) / view.zoom,
+      y: (event.clientY - bounds.top - view.pan.y) / view.zoom,
+    });
   };
 
   return {
@@ -77,6 +108,7 @@ function useInfiniteCanvasEvents() {
       onPointerUp,
       onPointerCancel,
       onWheel,
+      onClick,
     },
   };
 }
