@@ -4,6 +4,7 @@ import { css } from "@emotion/react";
 import { CanvasViewportContext } from "../../state/CanvasViewportContext/CanvasViewportContext.ts";
 import useInfiniteCanvasEvents from "./useInfiniteCanvasEvents.ts";
 import { type Point } from "../../types/Point.ts";
+import { useComments } from "../../state/CommentsContext/CommentsContext.ts";
 
 const Root = styled.div(
   ({ x, y }: Point) => css`
@@ -50,14 +51,13 @@ const StatusBar = styled.div`
   font-size: 12px;
 `;
 
-interface InfiniteCanvasProps {
-  onCanvasClick?: (point: Point) => unknown;
-}
+export default function InfiniteCanvas({ children }: PropsWithChildren) {
+  const comments = useComments();
 
-export default function InfiniteCanvas({
-  children,
-  onCanvasClick = () => {},
-}: PropsWithChildren<InfiniteCanvasProps>) {
+  const onCanvasClick = ({ x, y }: Point) => {
+    comments.addThread(x, y);
+  };
+
   const {
     viewport: { pan, zoom },
     events,

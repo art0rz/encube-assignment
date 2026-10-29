@@ -39,6 +39,7 @@ interface InfiniteCanvasItemProps {
   y: number;
   width: number;
   height: number;
+  onMove?: (position: Point) => unknown;
 }
 
 export default function InfiniteCanvasItem({
@@ -48,6 +49,7 @@ export default function InfiniteCanvasItem({
   y,
   width,
   height,
+  onMove,
 }: PropsWithChildren<InfiniteCanvasItemProps>) {
   const { zoom } = useCanvasViewport();
   const [position, setPosition] = useState<Point>({ x, y });
@@ -78,7 +80,11 @@ export default function InfiniteCanvasItem({
   };
 
   const endDrag = () => {
+    // Pointer up and lost capture both end the drag, only report it once.
+    if (!dragStart.current) return;
+
     dragStart.current = null;
+    onMove?.(position);
   };
 
   const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {

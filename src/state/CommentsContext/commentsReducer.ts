@@ -1,0 +1,180 @@
+import { useReducer } from "react";
+
+export interface CommentMessage {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface CommentThread {
+  id: string;
+  x: number;
+  y: number;
+  resolved: boolean;
+  messages: CommentMessage[];
+}
+
+export interface CommentsState {
+  threads: CommentThread[];
+}
+
+const initialState: CommentsState = {
+  threads: [],
+};
+
+type CommentsAction =
+  | {
+      type: "threadAdded";
+      thread: CommentThread;
+    }
+  | {
+      type: "replyAdded";
+      threadId: string;
+      message: CommentMessage;
+    }
+  | {
+      type: "messageEdited";
+      threadId: string;
+      messageId: string;
+      text: string;
+    }
+  | {
+      type: "threadResolved";
+      threadId: string;
+      resolved: boolean;
+    }
+  | {
+      type: "threadMoved";
+      threadId: string;
+      x: number;
+      y: number;
+    };
+
+function commentsReducer(state: CommentsState, action: CommentsAction): CommentsState {
+  switch (action.type) {
+    case "threadAdded":
+      return {
+        ...state,
+        threads: [...state.threads, action.thread],
+      };
+
+    case "replyAdded":
+      return {
+        ...state,
+        threads: state.threads.map((thread) =>
+          thread.id === action.threadId
+            ? {
+                ...thread,
+                messages: [...thread.messages, action.message],
+              }
+            : thread,
+        ),
+      };
+
+    case "messageEdited":
+      return {
+        ...state,
+        threads: state.threads.map((thread) =>
+          thread.id === action.threadId
+            ? {
+                ...thread,
+                messages: thread.messages.map((message) =>
+                  message.id === action.messageId ? { ...message, text: action.text } : message,
+                ),
+              }
+            : thread,
+        ),
+      };
+
+    case "threadResolved":
+      return {
+        ...state,
+        threads: state.threads.map((thread) =>
+          thread.id === action.threadId ? { ...thread, resolved: action.resolved } : thread,
+        ),
+      };
+
+    case "threadMoved":
+      return {
+        ...state,
+        threads: state.threads.map((thread) =>
+          thread.id === action.threadId ? { ...thread, x: action.x, y: action.y } : thread,
+        ),
+      };
+  }
+}
+
+export function useCommentsReducer() {
+  const [state, dispatch] = useReducer(commentsReducer, initialState);
+
+  function createMessage(text: string): CommentMessage {
+    return {
+      id: crypto.randomUUID(),
+      author: "You",
+      text: text.trim(),
+      createdAt: new Date().toISOString(),
+    };
+  }
+
+  function addThread(x: number, y: number) {
+    const thread: CommentThread = {
+      id: crypto.randomUUID(),
+      x,
+      y,
+      resolved: false,
+      messages: [],
+    };
+
+    dispatch({ type: "threadAdded", thread });
+
+    return thread.id;
+  }
+
+  function addReply(threadId: string, text: string) {
+    if (!text.trim()) return;
+
+    dispatch({
+      type: "replyAdded",
+      threadId,
+      message: createMessage(text),
+    });
+  }
+
+  function editMessage(threadId: string, messageId: string, text: string) {
+    if (!text.trim()) return;
+
+    dispatch({
+      type: "messageEdited",
+      threadId,
+      messageId,
+      text: text.trim(),
+    });
+  }
+
+  function setResolved(threadId: string, resolved: boolean) {
+    dispatch({
+      type: "threadResolved",
+      threadId,
+      resolved,
+    });
+  }
+
+  function moveThread(threadId: string, x: number, y: number) {
+    dispatch({
+      type: "threadMoved",
+      threadId,
+      x,
+      y,
+    });
+  }
+
+  return {
+    threads: state.threads,
+    addThread,
+    addReply,
+    editMessage,
+    setResolved,
+    moveThread,
+  };
+}

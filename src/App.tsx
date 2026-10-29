@@ -9,8 +9,12 @@ import Icosahedron from "./components/WebGlScenes/Icosahedron.tsx";
 import Horse from "./components/WebGlScenes/Horse.tsx";
 import InfiniteCanvasItem from "./components/InfiniteCanvasItem.tsx";
 import { Suspense } from "react";
+import { useComments } from "./state/CommentsContext/CommentsContext.ts";
+import CommentBox from "./components/CommentBox.tsx";
 
 function App() {
+  const comments = useComments();
+
   return (
     <InfiniteCanvas>
       <InfiniteCanvasItem title="Cube" x={20} y={20} width={320} height={320}>
@@ -43,6 +47,20 @@ function App() {
       <InfiniteCanvasItem title="Horse drawing" x={60} y={600} width={400} height={300}>
         <img src={horse} alt="" style={{ width: "100%", height: "100%" }} />
       </InfiniteCanvasItem>
+
+      {comments.threads.map(({ x, y, id }) => (
+        <InfiniteCanvasItem
+          title="Comment"
+          x={x}
+          y={y}
+          width={400}
+          height={300}
+          key={id}
+          onMove={(position) => comments.moveThread(id, position.x, position.y)}
+        >
+          <CommentBox threadId={id} />
+        </InfiniteCanvasItem>
+      ))}
     </InfiniteCanvas>
   );
 }
