@@ -7,9 +7,16 @@ const Root = styled.div`
   left: 0;
 `;
 
-export default function InfiniteCanvasItem({ children }: PropsWithChildren) {
+interface InfiniteCanvasItemProps {
+  zoom: number;
+}
+
+export default function InfiniteCanvasItem({
+  children,
+  zoom,
+}: PropsWithChildren<InfiniteCanvasItemProps>) {
   return (
-    <Root>
+    <Root style={{ transform: `scale(${zoom})` }}>
       <p>Title</p>
       {children}
     </Root>
