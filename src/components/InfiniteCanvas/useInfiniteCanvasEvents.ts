@@ -1,58 +1,10 @@
-import { type PropsWithChildren, useRef, useState } from "react";
-import styled from "@emotion/styled";
+import { useRef, useState } from "react";
 import * as React from "react";
-import { css } from "@emotion/react";
-import { CanvasViewportContext } from "../contexts/CanvasViewportContext/CanvasViewportContext.ts";
 
-const Root = styled.div(
-  ({ x, y }: { x: number; y: number }) => css`
-    background-image:
-      linear-gradient(to right, white 9px, transparent 9px),
-      linear-gradient(to bottom, white 9px, #b7b7b7 9px);
-    background-size: 10px 10px;
-    background-position: ${x}px ${y}px;
-    background-repeat: repeat;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    &:active {
-      cursor: grabbing;
-    }
-  `,
-);
-
-const World = styled.div`
-  position: absolute;
-  inset: 0;
-  transform-origin: 0 0;
-  pointer-events: none;
-
-  > * {
-    pointer-events: auto;
-  }
-`;
-
-const StatusBar = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  border-top: 1px solid #dadada;
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  padding: 4px 8px;
-  font-size: 12px;
-`;
-
-export default function InfiniteCanvas({ children }: PropsWithChildren<{}>) {
+function useInfiniteCanvasEvents() {
   const drag = useRef<{ x: number; y: number } | null>(null);
 
-  const [{ pan, zoom }, setView] = useState({
+  const [view, setView] = useState({
     pan: { x: 0, y: 0 },
     zoom: 1,
   });
@@ -113,31 +65,20 @@ export default function InfiniteCanvas({ children }: PropsWithChildren<{}>) {
     drag.current = null;
     event.currentTarget.releasePointerCapture(event.pointerId);
   };
+  const onPointerCancel = () => {
+    drag.current = null;
+  };
 
-  return (
-    <CanvasViewportContext value={{ zoom }}>
-      <Root
-        onWheel={onWheel}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={() => {
-          drag.current = null;
-        }}
-        x={pan.x}
-        y={pan.y}
-      >
-        <World
-          style={{
-            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-          }}
-        >
-          {children}
-        </World>
-        <StatusBar>
-          <div>Zoom: {Math.round(zoom * 100)}%</div>
-        </StatusBar>
-      </Root>
-    </CanvasViewportContext>
-  );
+  return {
+    viewport: view,
+    events: {
+      onPointerDown,
+      onPointerMove,
+      onPointerUp,
+      onPointerCancel,
+      onWheel,
+    },
+  };
 }
+
+export default useInfiniteCanvasEvents;

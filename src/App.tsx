@@ -1,5 +1,5 @@
 import "./App.css";
-import InfiniteCanvas from "./components/InfiniteCanvas.tsx";
+import InfiniteCanvas from "./components/InfiniteCanvas/InfiniteCanvas.tsx";
 import WebGlContent from "./components/WebGlContent.tsx";
 import horse from "./assets/horse.png";
 import Cube from "./components/WebGlScenes/Cube.tsx";
