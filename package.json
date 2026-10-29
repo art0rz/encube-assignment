@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "prepare": "husky"
+    "prepare": "husky",
+    "typecheck": "tsc -p tsconfig.app.json"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
