@@ -41,7 +41,9 @@ export default function InfiniteCanvas({ children }: PropsWithChildren<{}>) {
   return (
     <Root onWheel={onWheel}>
       {Children.map(children, (child) => (
-        <InfiniteCanvasItem zoom={zoom}>{child}</InfiniteCanvasItem>
+        <InfiniteCanvasItem zoom={zoom} x={100} y={100}>
+          {child}
+        </InfiniteCanvasItem>
       ))}
       <StatusBar>
         <div>Scale: {zoom}</div>
