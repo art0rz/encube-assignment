@@ -1,11 +1,16 @@
 import { Canvas } from "@react-three/fiber";
 import type { PropsWithChildren } from "react";
 import { OrbitControls } from "@react-three/drei";
+import styled from "@emotion/styled";
+
+const Root = styled.div`
+  width: 100%;
+  height: 100%;
+`;
 
 export default function WebGlContent({ children }: PropsWithChildren) {
   return (
-    <div
-      style={{ width: "100%", height: 320 }}
+    <Root
       onPointerDown={(event) => event.stopPropagation()}
       onWheel={(event) => event.stopPropagation()}
     >
@@ -25,6 +30,6 @@ export default function WebGlContent({ children }: PropsWithChildren) {
           maxDistance={10}
         />
       </Canvas>
-    </div>
+    </Root>
   );
 }

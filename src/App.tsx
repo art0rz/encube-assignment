@@ -13,36 +13,35 @@ import { Suspense } from "react";
 function App() {
   return (
     <InfiniteCanvas>
-      <InfiniteCanvasItem x={20} y={20}>
+      <InfiniteCanvasItem title="Cube" x={20} y={20} width={320} height={320}>
         <WebGlContent>
           <Cube />
         </WebGlContent>
       </InfiniteCanvasItem>
-      <InfiniteCanvasItem x={20} y={20}>
+      <InfiniteCanvasItem title="Teapot" x={240} y={120} width={300} height={200}>
         <WebGlContent>
           <Teapot />
         </WebGlContent>
       </InfiniteCanvasItem>
-      <InfiniteCanvasItem x={20} y={20}>
+      <InfiniteCanvasItem title="Torus knot" x={520} y={80} width={200} height={300}>
         <WebGlContent>
           <TorusKnot />
         </WebGlContent>
       </InfiniteCanvasItem>
-      <InfiniteCanvasItem x={20} y={20}>
+      <InfiniteCanvasItem title="Icosahedron" x={70} y={320} width={320} height={320}>
         <WebGlContent>
           <Icosahedron />
         </WebGlContent>
       </InfiniteCanvasItem>
-      <InfiniteCanvasItem x={20} y={20}>
+      <InfiniteCanvasItem title="Horse model" x={480} y={600} width={400} height={300}>
         <Suspense fallback={<p>Loading...</p>}>
           <WebGlContent>
             <Horse />
           </WebGlContent>
         </Suspense>
       </InfiniteCanvasItem>
-
-      <InfiniteCanvasItem x={20} y={20}>
-        <img src={horse} className="base" width="170" height="179" alt="" />
+      <InfiniteCanvasItem title="Horse drawing" x={60} y={600} width={400} height={300}>
+        <img src={horse} alt="" style={{ width: "100%", height: "100%" }} />
       </InfiniteCanvasItem>
     </InfiniteCanvas>
   );

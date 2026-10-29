@@ -28,17 +28,25 @@ const Title = styled.div`
 
 const Content = styled.div`
   padding: 0 var(--padding-x);
+  width: 100%;
+  height: 100%;
 `;
 
 interface InfiniteCanvasItemProps {
+  title: string;
   x: number;
   y: number;
+  width: number;
+  height: number;
 }
 
 export default function InfiniteCanvasItem({
   children,
+  title,
   x,
   y,
+  width,
+  height,
 }: PropsWithChildren<InfiniteCanvasItemProps>) {
   const { zoom } = useCanvasViewport();
   const [position, setPosition] = useState<{ x: number; y: number }>({ x, y });
@@ -81,7 +89,13 @@ export default function InfiniteCanvasItem({
   };
 
   return (
-    <Root style={{ transform: `translate(${position.x}px,${position.y}px) ` }}>
+    <Root
+      style={{
+        transform: `translate(${position.x}px,${position.y}px)`,
+        width: `${width}px`,
+        height: `${height}px`,
+      }}
+    >
       <Title
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -89,7 +103,7 @@ export default function InfiniteCanvasItem({
         onPointerCancel={endDrag}
         onLostPointerCapture={endDrag}
       >
-        Title
+        {title}
       </Title>
       <Content>{children}</Content>
     </Root>
