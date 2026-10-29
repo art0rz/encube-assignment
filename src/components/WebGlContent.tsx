@@ -1,7 +1,8 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, RoundedBox } from "@react-three/drei";
+import type { PropsWithChildren } from "react";
+import { OrbitControls } from "@react-three/drei";
 
-export default function WebGlContent() {
+export default function WebGlContent({ children }: PropsWithChildren) {
   return (
     <div
       style={{ width: "100%", height: 320 }}
@@ -9,14 +10,12 @@ export default function WebGlContent() {
       onWheel={(event) => event.stopPropagation()}
     >
       <Canvas frameloop="demand" camera={{ position: [3, 2.5, 4], fov: 40 }}>
+        {children}
+
         <ambientLight intensity={0.6} />
 
         <directionalLight position={[4, 6, 3]} intensity={3} />
         <directionalLight position={[-3, 2, -2]} intensity={1.5} color="#a5b4fc" />
-
-        <RoundedBox args={[1.5, 1.5, 1.5]} radius={0.08} smoothness={4}>
-          <meshStandardMaterial color="#6366f1" roughness={0.3} metalness={0.2} />
-        </RoundedBox>
 
         <OrbitControls
           makeDefault
