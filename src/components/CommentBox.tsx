@@ -1,6 +1,6 @@
 import { useComments } from "../state/CommentsContext/CommentsContext.ts";
-import type { CommentMessage } from "../state/CommentsContext/commentsReducer.ts";
-import { useState } from "react";
+import type { CommentThread } from "../state/CommentsContext/commentsReducer.ts";
+import { createContext, useContext, useState } from "react";
 import styled from "@emotion/styled";
 import { Pencil, Reply } from "lucide-react";
 import CommentForm from "./CommentForm.tsx";
@@ -88,6 +88,28 @@ const Replies = styled.div`
   border-left: 2px solid #e5e7eb;
 `;
 
+interface ThreadContextValue {
+  thread: CommentThread;
+  replyTo: string | null;
+  editingMessageId: string | null;
+  onReplyClick: (messageId: string | null) => unknown;
+  onEditClick: (messageId: string) => unknown;
+  onSubmitted: () => unknown;
+}
+
+// Shares the reply/edit state of one thread with its recursively rendered messages.
+const ThreadContext = createContext<ThreadContextValue | null>(null);
+
+function useThread() {
+  const context = useContext(ThreadContext);
+
+  if (context === null) {
+    throw new Error("useThread must be used inside CommentBox");
+  }
+
+  return context;
+}
+
 export default function CommentBox({ threadId }: { threadId: string }) {
   const { threads, addReply } = useComments();
   const thread = threads.find((thread) => thread.id === threadId);
@@ -112,17 +134,10 @@ export default function CommentBox({ threadId }: { threadId: string }) {
   if (!thread) return null;
 
   return (
-    <>
-      <CommentMessages
-        threadId={threadId}
-        messages={thread.messages}
-        parentId={null}
-        replyTo={replyTo}
-        editingMessageId={editingMessageId}
-        onReplyClick={onReplyClick}
-        onEditClick={onEditClick}
-        onSubmitted={onSubmitted}
-      />
+    <ThreadContext
+      value={{ thread, replyTo, editingMessageId, onReplyClick, onEditClick, onSubmitted }}
+    >
+      <CommentMessages parentId={null} />
       {replyTo === null && editingMessageId === null && (
         <CommentForm
           label="Reply"
@@ -130,32 +145,14 @@ export default function CommentBox({ threadId }: { threadId: string }) {
           onSubmit={(text) => addReply(threadId, text)}
         />
       )}
-    </>
+    </ThreadContext>
   );
 }
 
-type CommentMessagesProps = {
-  threadId: string;
-  messages: CommentMessage[];
-  parentId: string | null;
-  replyTo: string | null;
-  editingMessageId: string | null;
-  onReplyClick: (messageId: string | null) => unknown;
-  onEditClick: (messageId: string) => unknown;
-  onSubmitted: () => unknown;
-};
-
-function CommentMessages({
-  threadId,
-  messages,
-  parentId,
-  replyTo,
-  editingMessageId,
-  onReplyClick,
-  onEditClick,
-  onSubmitted,
-}: CommentMessagesProps) {
+function CommentMessages({ parentId }: { parentId: string | null }) {
   const { addReply, editMessage } = useComments();
+  const { thread, replyTo, editingMessageId, onReplyClick, onEditClick, onSubmitted } = useThread();
+  const { messages } = thread;
 
   return messages
     .filter((message) => message.parentId === parentId)
@@ -194,7 +191,7 @@ function CommentMessages({
             submitLabel="Save"
             initialText={message.text}
             onSubmit={(text) => {
-              editMessage(threadId, message.id, text);
+              editMessage(thread.id, message.id, text);
               onSubmitted();
             }}
           />
@@ -208,7 +205,7 @@ function CommentMessages({
               label="Reply"
               submitLabel="Post"
               onSubmit={(text) => {
-                addReply(threadId, text, message.id);
+                addReply(thread.id, text, message.id);
                 onSubmitted();
               }}
             />
@@ -217,16 +214,7 @@ function CommentMessages({
 
         {messages.some((reply) => reply.parentId === message.id) && (
           <Replies>
-            <CommentMessages
-              threadId={threadId}
-              messages={messages}
-              parentId={message.id}
-              editingMessageId={editingMessageId}
-              onEditClick={onEditClick}
-              replyTo={replyTo}
-              onReplyClick={onReplyClick}
-              onSubmitted={onSubmitted}
-            />
+            <CommentMessages parentId={message.id} />
           </Replies>
         )}
       </Message>
