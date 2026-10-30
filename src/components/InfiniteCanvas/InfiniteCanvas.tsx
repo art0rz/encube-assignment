@@ -55,7 +55,7 @@ export default function InfiniteCanvas({ children }: PropsWithChildren) {
   const comments = useComments();
 
   const onCanvasClick = (point: Point) => {
-    comments.startDraft(point);
+    comments.startDraft({ itemId: null, ...point });
   };
 
   const {

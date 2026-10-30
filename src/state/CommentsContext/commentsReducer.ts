@@ -2,10 +2,14 @@ import { useReducer } from "react";
 import { type Point } from "../../types/Point.ts";
 import { seedThreads } from "./seedThreads.ts";
 
-export interface CommentThread {
+// Where a thread is pinned: relative to an item's top-left corner so it moves with the item,
+// or directly in canvas coordinates when itemId is null.
+export interface ThreadAnchor extends Point {
+  itemId: string | null;
+}
+
+export interface CommentThread extends ThreadAnchor {
   id: string;
-  x: number;
-  y: number;
   resolved: boolean;
   messages: CommentMessage[];
 }
@@ -22,7 +26,7 @@ export interface CommentsState {
   threads: CommentThread[];
   selectedThreadId: string | null;
   // Where a new thread will be placed once its first message is posted.
-  draft: Point | null;
+  draft: ThreadAnchor | null;
 }
 
 const initialState: CommentsState = {
@@ -58,7 +62,7 @@ type CommentsAction =
     }
   | {
       type: "draftStarted";
-      position: Point;
+      anchor: ThreadAnchor;
     };
 
 function commentsReducer(state: CommentsState, action: CommentsAction): CommentsState {
@@ -118,7 +122,7 @@ function commentsReducer(state: CommentsState, action: CommentsAction): Comments
       return {
         ...state,
         selectedThreadId: null,
-        draft: action.position,
+        draft: action.anchor,
       };
   }
 }
@@ -136,13 +140,12 @@ export function useCommentsReducer() {
     };
   }
 
-  function addThread({ x, y }: Point, text: string) {
+  function addThread(anchor: ThreadAnchor, text: string) {
     if (!text.trim()) return;
 
     const thread: CommentThread = {
+      ...anchor,
       id: crypto.randomUUID(),
-      x,
-      y,
       resolved: false,
       messages: [createMessage(text)],
     };
@@ -185,8 +188,8 @@ export function useCommentsReducer() {
     dispatch({ type: "threadSelected", threadId });
   }
 
-  function startDraft(position: Point) {
-    dispatch({ type: "draftStarted", position });
+  function startDraft(anchor: ThreadAnchor) {
+    dispatch({ type: "draftStarted", anchor });
   }
 
   return {

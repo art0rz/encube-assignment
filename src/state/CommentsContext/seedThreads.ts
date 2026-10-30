@@ -14,12 +14,13 @@ function message(
   return { id, parentId, author, text, createdAt: minutesAgo(minutes) };
 }
 
-// Demo threads anchored to the placeholder items in App.
+// Demo threads pinned to the placeholder items defined in App.
 export const seedThreads: CommentThread[] = [
   {
     id: "seed-teapot",
-    x: 470,
-    y: 245,
+    itemId: "teapot",
+    x: 230,
+    y: 101,
     resolved: false,
     messages: [
       message(
@@ -40,8 +41,9 @@ export const seedThreads: CommentThread[] = [
   },
   {
     id: "seed-torus",
-    x: 640,
-    y: 180,
+    itemId: "torus-knot",
+    x: 120,
+    y: 76,
     resolved: false,
     messages: [
       message(
@@ -55,8 +57,9 @@ export const seedThreads: CommentThread[] = [
   },
   {
     id: "seed-icosahedron",
-    x: 240,
-    y: 480,
+    itemId: "icosahedron",
+    x: 170,
+    y: 136,
     resolved: false,
     messages: [
       message(
@@ -69,8 +72,9 @@ export const seedThreads: CommentThread[] = [
   },
   {
     id: "seed-horse",
-    x: 240,
-    y: 690,
+    itemId: "horse-drawing",
+    x: 180,
+    y: 66,
     resolved: true,
     messages: [
       message(

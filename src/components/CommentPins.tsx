@@ -1,7 +1,8 @@
 import styled from "@emotion/styled";
 import { useComments } from "../state/CommentsContext/CommentsContext.ts";
 import { useCanvasViewport } from "../state/CanvasViewportContext/CanvasViewportContext.ts";
-import { type Point } from "../types/Point.ts";
+import { useCanvasItems } from "../state/CanvasItemsContext/CanvasItemsContext.ts";
+import { type ThreadAnchor } from "../state/CommentsContext/commentsReducer.ts";
 
 const Pin = styled.button`
   position: absolute;
@@ -40,11 +41,22 @@ const Pin = styled.button`
 export default function CommentPins() {
   const { threads, selectedThreadId, draft, selectThread } = useComments();
   const { zoom } = useCanvasViewport();
+  const { items, zIndexOf } = useCanvasItems();
 
   // Pins live in canvas coordinates but keep a constant on-screen size, with their tip
-  // (bottom-left corner) on the commented point.
-  const transform = ({ x, y }: Point) =>
-    `translate(${x}px, ${y}px) scale(${1 / zoom}) translateY(-100%)`;
+  // (bottom-left corner) on the commented point. Pins on an item follow it when it moves.
+  const style = ({ itemId, x, y }: ThreadAnchor) => {
+    const item = itemId === null ? undefined : items[itemId];
+    const left = (item?.x ?? 0) + x;
+    const top = (item?.y ?? 0) + y;
+
+    return {
+      transform: `translate(${left}px, ${top}px) scale(${1 / zoom}) translateY(-100%)`,
+      // Pins share their item's z-index and come after the items in the DOM, so they sit
+      // just above their own item but below any item raised over it.
+      zIndex: zIndexOf(itemId),
+    };
+  };
 
   return (
     <>
@@ -55,7 +67,7 @@ export default function CommentPins() {
           aria-label={`Open thread ${index + 1}`}
           data-selected={thread.id === selectedThreadId || undefined}
           data-resolved={thread.resolved || undefined}
-          style={{ transform: transform(thread) }}
+          style={style(thread)}
           onClick={() => selectThread(thread.id)}
         >
           {index + 1}
@@ -63,7 +75,7 @@ export default function CommentPins() {
       ))}
 
       {draft && (
-        <Pin as="div" aria-hidden data-draft style={{ transform: transform(draft) }}>
+        <Pin as="div" aria-hidden data-draft style={style(draft)}>
           +
         </Pin>
       )}

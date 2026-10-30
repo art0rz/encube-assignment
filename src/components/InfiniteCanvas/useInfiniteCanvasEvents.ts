@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import * as React from "react";
 import { type Point } from "../../types/Point.ts";
+import { isDrag } from "../../utils/isDrag.ts";
 
 function useInfiniteCanvasEvents({ onCanvasClick }: { onCanvasClick: (point: Point) => unknown }) {
   const pointerStart = useRef<Point | null>(null);
@@ -56,7 +57,7 @@ function useInfiniteCanvasEvents({ onCanvasClick }: { onCanvasClick: (point: Poi
 
     const start = pointerStart.current;
 
-    if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 4) {
+    if (start && isDrag(start, { x: event.clientX, y: event.clientY })) {
       didDrag.current = true;
     }
 
