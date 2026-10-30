@@ -1,4 +1,5 @@
 import { useReducer } from "react";
+import { type Point } from "../../types/Point.ts";
 
 export interface CommentThread {
   id: string;
@@ -18,10 +19,15 @@ export interface CommentMessage {
 
 export interface CommentsState {
   threads: CommentThread[];
+  selectedThreadId: string | null;
+  // Where a new thread will be placed once its first message is posted.
+  draft: Point | null;
 }
 
 const initialState: CommentsState = {
   threads: [],
+  selectedThreadId: null,
+  draft: null,
 };
 
 type CommentsAction =
@@ -46,10 +52,12 @@ type CommentsAction =
       resolved: boolean;
     }
   | {
-      type: "threadMoved";
-      threadId: string;
-      x: number;
-      y: number;
+      type: "threadSelected";
+      threadId: string | null;
+    }
+  | {
+      type: "draftStarted";
+      position: Point;
     };
 
 function commentsReducer(state: CommentsState, action: CommentsAction): CommentsState {
@@ -58,6 +66,8 @@ function commentsReducer(state: CommentsState, action: CommentsAction): Comments
       return {
         ...state,
         threads: [...state.threads, action.thread],
+        selectedThreadId: action.thread.id,
+        draft: null,
       };
 
     case "replyAdded":
@@ -96,12 +106,18 @@ function commentsReducer(state: CommentsState, action: CommentsAction): Comments
         ),
       };
 
-    case "threadMoved":
+    case "threadSelected":
       return {
         ...state,
-        threads: state.threads.map((thread) =>
-          thread.id === action.threadId ? { ...thread, x: action.x, y: action.y } : thread,
-        ),
+        selectedThreadId: action.threadId,
+        draft: null,
+      };
+
+    case "draftStarted":
+      return {
+        ...state,
+        selectedThreadId: null,
+        draft: action.position,
       };
   }
 }
@@ -119,13 +135,15 @@ export function useCommentsReducer() {
     };
   }
 
-  function addThread(x: number, y: number) {
+  function addThread({ x, y }: Point, text: string) {
+    if (!text.trim()) return;
+
     const thread: CommentThread = {
       id: crypto.randomUUID(),
       x,
       y,
       resolved: false,
-      messages: [],
+      messages: [createMessage(text)],
     };
 
     dispatch({ type: "threadAdded", thread });
@@ -162,21 +180,23 @@ export function useCommentsReducer() {
     });
   }
 
-  function moveThread(threadId: string, x: number, y: number) {
-    dispatch({
-      type: "threadMoved",
-      threadId,
-      x,
-      y,
-    });
+  function selectThread(threadId: string | null) {
+    dispatch({ type: "threadSelected", threadId });
+  }
+
+  function startDraft(position: Point) {
+    dispatch({ type: "draftStarted", position });
   }
 
   return {
     threads: state.threads,
+    selectedThreadId: state.selectedThreadId,
+    draft: state.draft,
     addThread,
     addReply,
     editMessage,
     setResolved,
-    moveThread,
+    selectThread,
+    startDraft,
   };
 }

@@ -9,59 +9,49 @@ import Icosahedron from "./components/WebGlScenes/Icosahedron.tsx";
 import Horse from "./components/WebGlScenes/Horse.tsx";
 import InfiniteCanvasItem from "./components/InfiniteCanvasItem.tsx";
 import { Suspense } from "react";
-import { useComments } from "./state/CommentsContext/CommentsContext.ts";
-import CommentBox from "./components/CommentBox.tsx";
+import CommentPins from "./components/CommentPins.tsx";
+import CommentPanel from "./components/CommentPanel.tsx";
 
 function App() {
-  const comments = useComments();
-
   return (
-    <InfiniteCanvas>
-      <InfiniteCanvasItem title="Cube" x={20} y={20} width={320} height={320}>
-        <WebGlContent>
-          <Cube />
-        </WebGlContent>
-      </InfiniteCanvasItem>
-      <InfiniteCanvasItem title="Teapot" x={240} y={120} width={300} height={200}>
-        <WebGlContent>
-          <Teapot />
-        </WebGlContent>
-      </InfiniteCanvasItem>
-      <InfiniteCanvasItem title="Torus knot" x={520} y={80} width={200} height={300}>
-        <WebGlContent>
-          <TorusKnot />
-        </WebGlContent>
-      </InfiniteCanvasItem>
-      <InfiniteCanvasItem title="Icosahedron" x={70} y={320} width={320} height={320}>
-        <WebGlContent>
-          <Icosahedron />
-        </WebGlContent>
-      </InfiniteCanvasItem>
-      <InfiniteCanvasItem title="Horse model" x={480} y={600} width={400} height={300}>
-        <Suspense fallback={<p>Loading...</p>}>
+    <>
+      <InfiniteCanvas>
+        <InfiniteCanvasItem title="Cube" x={20} y={20} width={320} height={320}>
           <WebGlContent>
-            <Horse />
+            <Cube />
           </WebGlContent>
-        </Suspense>
-      </InfiniteCanvasItem>
-      <InfiniteCanvasItem title="Horse drawing" x={60} y={600} width={400} height={300}>
-        <img src={horse} alt="" style={{ width: "100%", height: "100%" }} />
-      </InfiniteCanvasItem>
-
-      {comments.threads.map(({ x, y, id }) => (
-        <InfiniteCanvasItem
-          title="Comment"
-          x={x}
-          y={y}
-          width={400}
-          height={300}
-          key={id}
-          onMove={(position) => comments.moveThread(id, position.x, position.y)}
-        >
-          <CommentBox threadId={id} />
         </InfiniteCanvasItem>
-      ))}
-    </InfiniteCanvas>
+        <InfiniteCanvasItem title="Teapot" x={240} y={120} width={300} height={200}>
+          <WebGlContent>
+            <Teapot />
+          </WebGlContent>
+        </InfiniteCanvasItem>
+        <InfiniteCanvasItem title="Torus knot" x={520} y={80} width={200} height={300}>
+          <WebGlContent>
+            <TorusKnot />
+          </WebGlContent>
+        </InfiniteCanvasItem>
+        <InfiniteCanvasItem title="Icosahedron" x={70} y={320} width={320} height={320}>
+          <WebGlContent>
+            <Icosahedron />
+          </WebGlContent>
+        </InfiniteCanvasItem>
+        <InfiniteCanvasItem title="Horse model" x={480} y={600} width={400} height={300}>
+          <Suspense fallback={<p>Loading...</p>}>
+            <WebGlContent>
+              <Horse />
+            </WebGlContent>
+          </Suspense>
+        </InfiniteCanvasItem>
+        <InfiniteCanvasItem title="Horse drawing" x={60} y={600} width={400} height={300}>
+          <img src={horse} alt="" style={{ width: "100%", height: "100%" }} />
+        </InfiniteCanvasItem>
+
+        <CommentPins />
+      </InfiniteCanvas>
+
+      <CommentPanel />
+    </>
   );
 }
 

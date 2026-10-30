@@ -3,47 +3,93 @@ import type { CommentMessage } from "../state/CommentsContext/commentsReducer.ts
 import { useState } from "react";
 import styled from "@emotion/styled";
 import { Pencil, Reply } from "lucide-react";
+import CommentForm from "./CommentForm.tsx";
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "medium",
-  timeStyle: "short",
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
 });
 
-const ReplyHeader = styled.div`
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  padding: 6px 4px 0 0;
-
-  > strong {
-    flex: 1 0 auto;
-  }
+const Message = styled.div`
+  padding-top: 10px;
 `;
 
-const ReplyMessage = styled.p`
-  margin: 2px 0;
-`;
-
-const HeaderButton = styled.button`
-  background: transparent;
-  border: 1px solid #dadada;
-  padding: 4px;
+const Avatar = styled.span`
+  display: grid;
+  place-items: center;
+  flex: none;
   width: 24px;
   height: 24px;
-  cursor: pointer;
+  border-radius: 50%;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+`;
 
-  > svg {
-    width: 16px;
-    height: 16px;
+const MessageHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+
+  > strong {
+    font-size: 13px;
+    white-space: nowrap;
   }
 `;
 
 const Timestamp = styled.span`
-  color: #545454;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: #6b7280;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const IconButton = styled.button`
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+
+  &:hover,
+  &[aria-pressed="true"] {
+    background: #f3f4f6;
+    color: #111827;
+  }
+
+  > svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const MessageText = styled.p`
+  margin: 2px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+`;
+
+// The guide line runs under the centre of the parent's avatar.
+const Replies = styled.div`
+  margin-left: 11px;
+  padding-left: 10px;
+  border-left: 2px solid #e5e7eb;
 `;
 
 export default function CommentBox({ threadId }: { threadId: string }) {
-  const { threads } = useComments();
+  const { threads, addReply } = useComments();
   const thread = threads.find((thread) => thread.id === threadId);
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -77,57 +123,14 @@ export default function CommentBox({ threadId }: { threadId: string }) {
         onEditClick={onEditClick}
         onSubmitted={onSubmitted}
       />
-      {replyTo === null && editingMessageId === null && <CommentForm threadId={threadId} />}
+      {replyTo === null && editingMessageId === null && (
+        <CommentForm
+          label="Reply"
+          submitLabel="Post"
+          onSubmit={(text) => addReply(threadId, text)}
+        />
+      )}
     </>
-  );
-}
-
-interface CommentFormProps {
-  parentId?: string | null;
-  onSubmitted?: () => unknown;
-  threadId: string;
-  editingMessageId?: string;
-  initialText?: string;
-}
-
-function CommentForm({
-  threadId,
-  editingMessageId,
-  parentId = null,
-  onSubmitted,
-  initialText,
-}: CommentFormProps) {
-  const { addReply, editMessage } = useComments();
-  const isEditing = editingMessageId !== undefined;
-  const label = isEditing ? "Edit comment" : "Reply";
-
-  const submitReply = (formData: FormData) => {
-    const text = formData.get("text");
-
-    if (typeof text !== "string" || !text.trim()) return;
-
-    if (isEditing) {
-      editMessage(threadId, editingMessageId, text);
-    } else {
-      addReply(threadId, text, parentId);
-    }
-
-    onSubmitted?.();
-  };
-
-  return (
-    <form action={submitReply}>
-      <input
-        name="text"
-        required
-        placeholder={label}
-        aria-label={label}
-        defaultValue={initialText}
-        autoFocus
-      />
-
-      <button type="submit">{isEditing ? "Save" : "Post"}</button>
-    </form>
   );
 }
 
@@ -152,47 +155,68 @@ function CommentMessages({
   onEditClick,
   onSubmitted,
 }: CommentMessagesProps) {
+  const { addReply, editMessage } = useComments();
+
   return messages
     .filter((message) => message.parentId === parentId)
     .map((message) => (
-      <div key={message.id}>
-        <ReplyHeader>
+      <Message key={message.id}>
+        <MessageHeader>
+          <Avatar aria-hidden>{message.author.charAt(0)}</Avatar>
+
           <strong>{message.author}</strong>
 
           <Timestamp>{dateFormatter.format(new Date(message.createdAt))}</Timestamp>
 
-          <HeaderButton type="button" onClick={() => onEditClick(message.id)}>
-            <Pencil />
-          </HeaderButton>
-
-          <HeaderButton
+          <IconButton
             type="button"
+            aria-label="Edit"
+            aria-pressed={editingMessageId === message.id}
+            onClick={() => onEditClick(message.id)}
+          >
+            <Pencil />
+          </IconButton>
+
+          <IconButton
+            type="button"
+            aria-label="Reply"
+            aria-pressed={replyTo === message.id}
             onClick={() => onReplyClick(replyTo === message.id ? null : message.id)}
           >
             <Reply />
-          </HeaderButton>
-        </ReplyHeader>
+          </IconButton>
+        </MessageHeader>
 
         {editingMessageId === message.id ? (
           <CommentForm
             key={message.id}
-            threadId={threadId}
-            editingMessageId={message.id}
+            label="Edit comment"
+            submitLabel="Save"
             initialText={message.text}
-            onSubmitted={onSubmitted}
+            onSubmit={(text) => {
+              editMessage(threadId, message.id, text);
+              onSubmitted();
+            }}
           />
         ) : (
-          <ReplyMessage>{message.text}</ReplyMessage>
+          <MessageText>{message.text}</MessageText>
         )}
 
         {replyTo === message.id && (
-          <blockquote>
-            <CommentForm threadId={threadId} parentId={message.id} onSubmitted={onSubmitted} />
-          </blockquote>
+          <Replies>
+            <CommentForm
+              label="Reply"
+              submitLabel="Post"
+              onSubmit={(text) => {
+                addReply(threadId, text, message.id);
+                onSubmitted();
+              }}
+            />
+          </Replies>
         )}
 
         {messages.some((reply) => reply.parentId === message.id) && (
-          <blockquote>
+          <Replies>
             <CommentMessages
               threadId={threadId}
               messages={messages}
@@ -203,8 +227,8 @@ function CommentMessages({
               onReplyClick={onReplyClick}
               onSubmitted={onSubmitted}
             />
-          </blockquote>
+          </Replies>
         )}
-      </div>
+      </Message>
     ));
 }
