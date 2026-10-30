@@ -31,6 +31,7 @@ const Content = styled.div`
   padding: 0 var(--padding-x);
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
 `;
 
 interface InfiniteCanvasItemProps {

@@ -1,18 +1,19 @@
 import { useReducer } from "react";
 
-export interface CommentMessage {
-  id: string;
-  author: string;
-  text: string;
-  createdAt: string;
-}
-
 export interface CommentThread {
   id: string;
   x: number;
   y: number;
   resolved: boolean;
   messages: CommentMessage[];
+}
+
+export interface CommentMessage {
+  id: string;
+  parentId: string | null;
+  author: string;
+  text: string;
+  createdAt: string;
 }
 
 export interface CommentsState {
@@ -108,9 +109,10 @@ function commentsReducer(state: CommentsState, action: CommentsAction): Comments
 export function useCommentsReducer() {
   const [state, dispatch] = useReducer(commentsReducer, initialState);
 
-  function createMessage(text: string): CommentMessage {
+  function createMessage(text: string, parentId: string | null = null): CommentMessage {
     return {
       id: crypto.randomUUID(),
+      parentId,
       author: "You",
       text: text.trim(),
       createdAt: new Date().toISOString(),
@@ -131,13 +133,13 @@ export function useCommentsReducer() {
     return thread.id;
   }
 
-  function addReply(threadId: string, text: string) {
+  function addReply(threadId: string, text: string, parentId: string | null = null) {
     if (!text.trim()) return;
 
     dispatch({
       type: "replyAdded",
       threadId,
-      message: createMessage(text),
+      message: createMessage(text, parentId),
     });
   }
 
