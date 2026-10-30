@@ -37,7 +37,13 @@ npm run preview
 | `npm run fmt`       | Format with oxfmt                             |
 | `npm run fmt:check` | Check formatting without writing changes      |
 
-A Husky pre-commit hook runs the type check, formatter and linter.
+A Husky pre-commit hook runs the type check, format check and linter.
+
+### Deployment
+
+Every push to `main` is deployed to GitHub Pages by [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which lints, checks formatting, builds and publishes `dist/`. Vite uses relative asset paths (`base: "./"`), so the build works from a project-site sub-path such as `/encube-assignment/`.
+
+To enable it on a new repository, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**. The workflow can also be run manually from the Actions tab.
 
 ## Using the app
 
