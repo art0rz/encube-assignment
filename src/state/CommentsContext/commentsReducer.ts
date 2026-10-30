@@ -1,5 +1,6 @@
 import { useReducer } from "react";
 import { type Point } from "../../types/Point.ts";
+import { seedThreads } from "./seedThreads.ts";
 
 export interface CommentThread {
   id: string;
@@ -25,7 +26,7 @@ export interface CommentsState {
 }
 
 const initialState: CommentsState = {
-  threads: [],
+  threads: seedThreads,
   selectedThreadId: null,
   draft: null,
 };

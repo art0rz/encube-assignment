@@ -17,11 +17,27 @@ const Avatar = styled.span`
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #dbeafe;
-  color: #1d4ed8;
   font-size: 12px;
   font-weight: 600;
 `;
+
+const avatarColors = [
+  { background: "#dbeafe", color: "#1d4ed8" },
+  { background: "#fce7f3", color: "#be185d" },
+  { background: "#dcfce7", color: "#15803d" },
+  { background: "#fef3c7", color: "#b45309" },
+  { background: "#ede9fe", color: "#6d28d9" },
+];
+
+// Gives each author a stable colour so different people are easy to tell apart.
+function avatarColor(author: string) {
+  const hash = [...author].reduce(
+    (hash, character) => (hash * 17 + character.charCodeAt(0)) >>> 0,
+    0,
+  );
+
+  return avatarColors[hash % avatarColors.length];
+}
 
 const MessageHeader = styled.div`
   display: flex;
@@ -153,7 +169,9 @@ function CommentMessages({ parentId }: { parentId: string | null }) {
     .map((message) => (
       <Message key={message.id}>
         <MessageHeader>
-          <Avatar aria-hidden>{message.author.charAt(0)}</Avatar>
+          <Avatar aria-hidden style={avatarColor(message.author)}>
+            {message.author.charAt(0)}
+          </Avatar>
 
           <strong>{message.author}</strong>
 
