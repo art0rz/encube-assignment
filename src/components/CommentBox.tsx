@@ -4,13 +4,7 @@ import { createContext, useContext, useState } from "react";
 import styled from "@emotion/styled";
 import { Pencil, Reply } from "lucide-react";
 import CommentForm from "./CommentForm.tsx";
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, {
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-});
+import { formatTimestamp } from "../utils/formatTimestamp.ts";
 
 const Message = styled.div`
   padding-top: 10px;
@@ -163,7 +157,7 @@ function CommentMessages({ parentId }: { parentId: string | null }) {
 
           <strong>{message.author}</strong>
 
-          <Timestamp>{dateFormatter.format(new Date(message.createdAt))}</Timestamp>
+          <Timestamp>{formatTimestamp(message.createdAt)}</Timestamp>
 
           <IconButton
             type="button"
